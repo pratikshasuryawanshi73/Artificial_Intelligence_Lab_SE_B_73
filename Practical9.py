@@ -1,34 +1,45 @@
 def minimax(node, depth, player, game_tree, values):
-    if depth == 0 or node not in game_tree:
+   
+    if node not in game_tree or depth == 0:
         return values[node]
 
     if player == "MAX":
-        alpha = float("-inf")
+        best = float("-inf")
         for child in game_tree[node]:
-            value = minimax(child, depth - 1, "MIN", game_tree, values)
-            alpha = max(alpha, value)
-        return alpha
+            val = minimax(child, depth - 1, "MIN", game_tree, values)
+            best = max(best, val)
+        return best
     else:  
-        alpha = float("inf")
+        best = float("inf")
         for child in game_tree[node]:
-            value = minimax(child, depth - 1, "MAX", game_tree, values)
-            alpha = min(alpha, value)
-        return alpha
+            val = minimax(child, depth - 1, "MAX", game_tree, values)
+            best = min(best, val)
+        return best
 
 
 game_tree = {
-    'A': ['B', 'C'],
-    'B': ['D', 'E'],
-    'C': ['F', 'G']
+    'A': ['B', 'C', 'D'],
+    'B': ['E', 'F'],
+    'C': ['G', 'H'],
+    'D': ['I'], 
+    'E': ['J', 'K'],
+    'F': ['L'],
+    'G': ['M', 'N'],
+    'H': ['O']
 }
 
-values = { 
-    'D': 3,
-    'E': 5,
-    'F': 6,
-    'G': 9
+
+values = {
+    'J': -6,
+    'K': -1,
+    'L': 2,
+    'M': 9,
+    'N': -9,
+    'O': -8,
+    'I': 9   
 }
 
 
-result = minimax('A', 2, "MAX", game_tree, values)
-print(result)
+result = minimax('A', 3, "MAX", game_tree, values)
+print("Optimal value using Minimax:", result)
+
