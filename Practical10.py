@@ -1,32 +1,51 @@
-def alphabeta(node, depth, alpha, beta, maximizingPlayer, values, index=0):
+def alphabeta(node, depth, alpha, beta, maximizingPlayer, tree, values):
     
-    if depth == 0 or index >= len(values):
-        return values[index]
-
+    if node not in tree:
+        return values[node]
+    
     if maximizingPlayer:
-        best = float('-inf')
-        for i in range(2):  
-            val = alphabeta(node*2+i, depth-1, alpha, beta, False, values, index*2+i)
-            best = max(best, val)
-            
-            alpha = max(alpha, best)
+        maxEval = float('-inf')
+        for child in tree[node]:
+            eval = alphabeta(child, depth + 1, alpha, beta, False, tree, values)
+            maxEval = max(maxEval, eval)
+            alpha = max(alpha, eval)
             if beta <= alpha:
-                break  
-        return best
+                print(f"Pruned at node {child} (α={alpha}, β={beta})")
+                break
+        return maxEval
     else:
-        best = float('inf')
-        for i in range(2):
-            val = alphabeta(node*2+i, depth-1, alpha, beta, True, values, index*2+i)
-            best = min(best, val)
-            beta = min(beta, best)
+        minEval = float('inf')
+        for child in tree[node]:
+            eval = alphabeta(child, depth + 1, alpha, beta, True, tree, values)
+            minEval = min(minEval, eval)
+            beta = min(beta, eval)
             if beta <= alpha:
-                break  # Alpha cut-off
-        return best
+                print(f"Pruned at node {child} (α={alpha}, β={beta})")
+                break
+        return minEval
 
 
 
-values = [2, 3, 5, 9, 0, 1, 7, 5] 
-depth = 3
-result = alphabeta(0, depth, float('-inf'), float('inf'), True, values)
+tree = {
+    'A': ['B', 'C', 'D'],
+    'B': ['M', 'E', 'F'],
+    'C': ['H', 'G', 'I'],
+    'D': ['J', 'K', 'L']
+}
 
-print("Optimal value (with Alpha-Beta Pruning):", result)
+
+values = {
+    'M': 3,
+    'E': 12,
+    'F': 8,
+    'H': 2,
+    'G': 6,
+    'I': 4,
+    'J': 14,
+    'K': 5,
+    'L': 2
+}
+
+
+optimal_value = alphabeta('A', 0, float('-inf'), float('inf'), True, tree, values)
+print("\nOptimal value (with Alpha-Beta Pruning):", optimal_value)
