@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Crop Management</h1>
+        <p style="color: var(--text-light); margin-top: 5px;">Track and manage all planted crops across the farm.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('addCropModal')"><i class="fa-solid fa-plus"></i> Add New Crop</button>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Crop Name</th>
+                    <th>Category</th>
+                    <th>Planted Date</th>
+                    <th>Expected Harvest</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for crop in crops %}
+                <tr>
+                    <td class="font-medium" style="color: var(--text-light);">#{{ crop.id }}</td>
+                    <td class="font-medium">{{ crop.name }}</td>
+                    <td>{{ crop.category }}</td>
+                    <td>{{ crop.planted_date }}</td>
+                    <td>{{ crop.expected_harvest_date }}</td>
+                    <td>
+                        {% if crop.status == 'growing' %}
+                            <span class="status-badge status-growing">Growing</span>
+                        {% elif crop.status == 'harvested' %}
+                            <span class="status-badge status-harvested">Harvested</span>
+                        {% else %}
+                            <span class="status-badge" style="background: #E5E7EB; color: #374151;">{{ crop.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-light); padding: 20px;">No crops found. Add one to get started.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Crop Modal -->
+<div id="addCropModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Crop</h3>
+            <button class="close-btn" onclick="closeModal('addCropModal')"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <form id="addCropForm">
+            <div class="form-group">
+                <label>Crop Name</label>
+                <input type="text" id="crop_name" required placeholder="e.g., Wheat, Corn, Tomato">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="crop_category" required>
+                    <option value="Cereal">Cereal</option>
+                    <option value="Vegetable">Vegetable</option>
+                    <option value="Fruit">Fruit</option>
+                    <option value="Legume">Legume</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Planted Date</label>
+                <input type="date" id="crop_planted_date" required>
+            </div>
+            <div class="form-group">
+                <label>Expected Harvest Date</label>
+                <input type="date" id="crop_harvest_date" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Save Crop</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
