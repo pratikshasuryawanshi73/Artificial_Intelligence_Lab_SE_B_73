@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Farm Overview</h1>
+    <div style="display: flex; gap: 12px;">
+        <button class="btn btn-primary" onclick="openModal('irrigationModal')"><i class="fa-solid fa-water"></i>
+            Schedule</button>
+        <button class="btn btn-accent" onclick="openModal('chemicalModal')"><i class="fa-solid fa-flask"></i> Log
+            Chemical</button>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card stat-card">
+        <div class="stat-icon bg-emerald-light">
+            <i class="fa-solid fa-seedling"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Total Crops</h3>
+            <div class="value">{{ crops_count }}</div>
+        </div>
+    </div>
+
+    <div class="card stat-card">
+        <div class="stat-icon bg-amber-light">
+            <i class="fa-solid fa-leaf"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Actively Growing</h3>
+            <div class="value">{{ growing_count }}</div>
+        </div>
+    </div>
+
+    <div class="card stat-card">
+        <div class="stat-icon" style="background:#DBEAFE; color:#1D4ED8;">
+            <i class="fa-solid fa-droplet"></i>
+        </div>
+        <div class="stat-content">
+            <h3>Upcoming Irrigations</h3>
+            <div class="value">{{ schedules|length }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Charts -->
+<h2 class="card-title" style="color: var(--text-main); margin-bottom: 20px;"><i class="fa-solid fa-chart-line"></i> Farm
+    Analytics</h2>
+<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+    <div class="card" style="height: 300px;">
+        <canvas id="cropChart"></canvas>
+    </div>
+    <div class="card" style="height: 300px;">
+        <canvas id="waterChart"></canvas>
+    </div>
+    <div class="card" style="height: 300px;">
+        <canvas id="chemChart"></canvas>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <!-- Irrigation Schedule -->
+    <div class="card">
+        <h2 class="card-title"><i class="fa-solid fa-clock"></i> Upcoming Irrigation</h2>
+        {% if schedules %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Crop</th>
+                        <th>Duration</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in schedules %}
+                    <tr>
+                        <td>{{ s.date }}</td>
+                        <td class="font-medium">{{ s.crop_name }}</td>
+                        <td>{{ s.duration_minutes }} min</td>
+                        <td>
+                            <button class="btn" style="background: var(--bg-primary); padding: 6px 12px;"
+                                onclick="markDone('{{ s.id }}')"">
+                                <i class=" fa-solid fa-check" style="color: var(--primary-color);"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color: var(--text-light); text-align: center; padding: 20px;">No upcoming irrigation schedules.</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Chemical Logs -->
+    <div class="card">
+        <h2 class="card-title"><i class="fa-solid fa-book"></i> Recent Chemical Logs</h2>
+        {% if recent_logs %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Crop</th>
+                        <th>Type</th>
+                        <th>Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in recent_logs %}
+                    <tr>
+                        <td>{{ l.application_date }}</td>
+                        <td class="font-medium">{{ l.crop_name }}</td>
+                        <td><span class="status-badge status-scheduled">{{ l.chem_type }}</span></td>
+                        <td>{{ l.name }} ({{ l.quantity }})</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color: var(--text-light); text-align: center; padding: 20px;">No recent logs.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="irrigationModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Schedule Irrigation</h3>
+            <button class="close-btn" onclick="closeModal('irrigationModal')"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <form id="irrigationForm">
+            <div class="form-group">
+                <label>Crop ID</label>
+                <input type="number" id="irr_crop_id" required>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="irr_date" required>
+            </div>
+            <div class="form-group">
+                <label>Duration (minutes)</label>
+                <input type="number" id="irr_duration" required>
+            </div>
+            <div class="form-group">
+                <label>Water Amount (Liters)</label>
+                <input type="number" step="0.1" id="irr_water" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Schedule</button>
+        </form>
+    </div>
+</div>
+
+<div id="chemicalModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Log Chemical Usage</h3>
+            <button class="close-btn" onclick="closeModal('chemicalModal')"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <form id="chemicalForm">
+            <div class="form-group">
+                <label>Crop ID</label>
+                <input type="number" id="chem_crop_id" required>
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select id="chem_type" required>
+                    <option value="fertilizer">Fertilizer</option>
+                    <option value="pesticide">Pesticide</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Chemical Name</label>
+                <input type="text" id="chem_name" required>
+            </div>
+            <div class="form-group">
+                <label>Application Date</label>
+                <input type="date" id="chem_date" required>
+            </div>
+            <div class="form-group">
+                <label>Quantity (kg/L)</label>
+                <input type="number" step="0.1" id="chem_quantity" required>
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; margin-top: 10px; background: var(--accent-color);">Save Log</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
